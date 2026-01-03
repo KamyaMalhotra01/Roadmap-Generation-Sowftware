@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Learning Roadmap Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card section-pastel cream">
+      <div class="logo">
+        <h1>🎯 Learning Roadmap Tracker</h1>
+        <p>Your personalized path to mastery</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" style="display: block;">
+        <h2>Sign In</h2>
+        
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input 
+            type="text" 
+            id="loginUsername" 
+            placeholder="Enter your username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            placeholder="Enter your password"
+            required
+          >
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <button type="submit" class="btn-primary">
+          <span>Sign In</span><span class="btn-arrow">→</span>
+        </button>
+
+        <p style="text-align: center; margin-top: 20px;">
+          Don't have an account? 
+          <a href="#" id="showRegister" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign up</a>
+        </p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" style="display: none;">
+        <h2>Create Account</h2>
+        
+        <div class="form-group">
+          <label for="registerUsername">Username</label>
+          <input 
+            type="text" 
+            id="registerUsername" 
+            placeholder="Choose a username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerEmail">Email (Optional)</label>
+          <input 
+            type="email" 
+            id="registerEmail" 
+            placeholder="your@email.com"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <input 
+            type="password" 
+            id="registerPassword" 
+            placeholder="Create a password (min 6 characters)"
+            required
+          >
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <button type="submit" class="btn-primary">
+          <span>Create Account</span><span class="btn-arrow">→</span>
+        </button>
+
+        <p style="text-align: center; margin-top: 20px;">
+          Already have an account? 
+          <a href="#" id="showLogin" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign in</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

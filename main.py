@@ -50,20 +50,38 @@ def root():
             "dashboard": "/dashboard"
         }
     }
-
+#admin
+@app.get("/admin/users")
+def get_all_users():
+    """Get all registered users (Admin only)"""
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email, created_at FROM users")
+    users = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return {"users": users}
 # ============ AUTH ENDPOINTS ============
 
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserRegister):
     """Register a new user"""
-    user = create_user(user_data.username, user_data.password, user_data.email)
-    
-    return {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"],
-        "created_at": user["created_at"]
-    }
+    try:
+        user = create_user(user_data.username, user_data.password, user_data.email)
+        
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "created_at": str(user["created_at"])
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Register error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 @app.post("/auth/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -104,6 +122,68 @@ def get_career_goals():
         "career_goals": get_available_career_goals(),
         "learning_levels": ["Beginner", "Intermediate"]
     }
+
+# ============ HELPER FUNCTION FOR ROADMAP RETRIEVAL ============
+
+def _get_user_roadmaps(user_id: int):
+    """Helper function to get all roadmaps for a user (without dependency injection)"""
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "SELECT * FROM roadmaps WHERE user_id = ? ORDER BY created_at DESC",
+        (user_id,)
+    )
+    roadmaps = cursor.fetchall()
+    
+    result = []
+    
+    for roadmap in roadmaps:
+        # Get skills with status
+        cursor.execute("""
+            SELECT s.*, ss.status, ss.id as status_id
+            FROM skills s
+            JOIN skill_status ss ON s.id = ss.skill_id
+            WHERE s.roadmap_id = ?
+            ORDER BY s.order_index
+        """, (roadmap["id"],))
+        
+        skills = cursor.fetchall()
+        
+        skills_data = [
+            {
+                "id": skill["id"],
+                "skill_name": skill["skill_name"],
+                "learning_stage": skill["learning_stage"],
+                "order_index": skill["order_index"],
+                "why_important": skill["why_important"],
+                "estimated_hours": skill["estimated_hours"],
+                "status": skill["status"],
+                "status_id": skill["status_id"]
+            }
+            for skill in skills
+        ]
+        
+        # Calculate progress
+        total = len(skills_data)
+        completed = sum(1 for s in skills_data if s["status"] == "COMPLETED")
+        progress = (completed / total * 100) if total > 0 else 0
+        
+        result.append({
+            "id": roadmap["id"],
+            "user_id": roadmap["user_id"],
+            "career_goal": roadmap["career_goal"],
+            "learning_level": roadmap["learning_level"],
+            "existing_skills": json.loads(roadmap["existing_skills"]),
+            "created_at": roadmap["created_at"],
+            "skills": skills_data,
+            "progress_percentage": round(progress, 2)
+        })
+    
+    conn.close()
+    
+    return result
 
 # ============ ROADMAP ENDPOINTS ============
 
@@ -217,63 +297,7 @@ def create_roadmap(
 @app.get("/roadmaps/my-roadmaps", response_model=List[RoadmapResponse])
 def get_my_roadmaps(current_user: dict = Depends(get_current_user)):
     """Get all roadmaps for current user"""
-    
-    conn = db.get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        "SELECT * FROM roadmaps WHERE user_id = ? ORDER BY created_at DESC",
-        (current_user["id"],)
-    )
-    roadmaps = cursor.fetchall()
-    
-    result = []
-    
-    for roadmap in roadmaps:
-        # Get skills with status
-        cursor.execute("""
-            SELECT s.*, ss.status, ss.id as status_id
-            FROM skills s
-            JOIN skill_status ss ON s.id = ss.skill_id
-            WHERE s.roadmap_id = ?
-            ORDER BY s.order_index
-        """, (roadmap["id"],))
-        
-        skills = cursor.fetchall()
-        
-        skills_data = [
-            {
-                "id": skill["id"],
-                "skill_name": skill["skill_name"],
-                "learning_stage": skill["learning_stage"],
-                "order_index": skill["order_index"],
-                "why_important": skill["why_important"],
-                "estimated_hours": skill["estimated_hours"],
-                "status": skill["status"],
-                "status_id": skill["status_id"]
-            }
-            for skill in skills
-        ]
-        
-        # Calculate progress
-        total = len(skills_data)
-        completed = sum(1 for s in skills_data if s["status"] == "COMPLETED")
-        progress = (completed / total * 100) if total > 0 else 0
-        
-        result.append({
-            "id": roadmap["id"],
-            "user_id": roadmap["user_id"],
-            "career_goal": roadmap["career_goal"],
-            "learning_level": roadmap["learning_level"],
-            "existing_skills": json.loads(roadmap["existing_skills"]),
-            "created_at": roadmap["created_at"],
-            "skills": skills_data,
-            "progress_percentage": round(progress, 2)
-        })
-    
-    conn.close()
-    
-    return result
+    return _get_user_roadmaps(current_user["id"])
 
 # ============ SKILL STATUS ENDPOINTS ============
 
@@ -340,15 +364,15 @@ def update_skill_status(
 def get_dashboard(current_user: dict = Depends(get_current_user)):
     """Get complete dashboard data"""
     
-    roadmaps = get_my_roadmaps(current_user)
+    roadmaps = _get_user_roadmaps(current_user["id"])
     
-    total_skills = sum(len(r.skills) for r in roadmaps)
+    total_skills = sum(len(r["skills"]) for r in roadmaps)
     completed_skills = sum(
-        sum(1 for s in r.skills if s.status == "COMPLETED") 
+        sum(1 for s in r["skills"] if s["status"] == "COMPLETED") 
         for r in roadmaps
     )
     in_progress_skills = sum(
-        sum(1 for s in r.skills if s.status == "IN_PROGRESS") 
+        sum(1 for s in r["skills"] if s["status"] == "IN_PROGRESS") 
         for r in roadmaps
     )
     

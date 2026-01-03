@@ -1,0 +1,251 @@
+"""
+Complete diagnostic script to identify setup issues
+Run: python diagnose.py
+"""
+
+import sys
+import os
+import sqlite3
+
+print("=" * 70)
+print("🔍 LEARNING ROADMAP TRACKER - DIAGNOSTIC CHECK")
+print("=" * 70)
+print()
+
+issues_found = []
+checks_passed = 0
+total_checks = 0
+
+def check(name, passed, error_msg=""):
+    global checks_passed, total_checks, issues_found
+    total_checks += 1
+    if passed:
+        checks_passed += 1
+        print(f"✅ {name}")
+    else:
+        print(f"❌ {name}")
+        if error_msg:
+            print(f"   Error: {error_msg}")
+            issues_found.append(f"{name}: {error_msg}")
+    return passed
+
+# 1. Python Version
+print("1️⃣ CHECKING PYTHON VERSION")
+print("-" * 70)
+python_version = sys.version_info
+version_ok = python_version.major == 3 and python_version.minor >= 8
+check(
+    f"Python version: {python_version.major}.{python_version.minor}.{python_version.micro}",
+    version_ok,
+    "Need Python 3.8 or higher"
+)
+print()
+
+# 2. Required Packages
+print("2️⃣ CHECKING REQUIRED PACKAGES")
+print("-" * 70)
+
+packages_to_check = [
+    ('fastapi', 'fastapi'),
+    ('uvicorn', 'uvicorn'),
+    ('pydantic', 'pydantic'),
+    ('jose', 'python-jose'),
+    ('passlib', 'passlib'),
+    ('bcrypt', 'bcrypt'),
+    ('requests', 'requests'),
+    ('dotenv', 'python-dotenv')
+]
+
+for module_name, package_name in packages_to_check:
+    try:
+        module = __import__(module_name)
+        version = getattr(module, '__version__', 'installed')
+        check(f"{package_name}: {version}", True)
+    except ImportError:
+        check(f"{package_name}", False, f"Not installed. Run: pip install {package_name}")
+
+print()
+
+# 3. bcrypt Version Check (Critical!)
+print("3️⃣ CHECKING BCRYPT VERSION (CRITICAL)")
+print("-" * 70)
+try:
+    import bcrypt
+    version = bcrypt.__version__
+    version_major = int(version.split('.')[0]) if hasattr(version, 'split') else 4
+    bcrypt_ok = version_major == 4
+    check(
+        f"bcrypt version: {version}",
+        bcrypt_ok,
+        "CRITICAL: Need bcrypt 4.x (not 5.x). Run: pip uninstall bcrypt && pip install bcrypt==4.0.1"
+    )
+except Exception as e:
+    check("bcrypt", False, f"Error: {str(e)}")
+
+print()
+
+# 4. Environment Variables
+print("4️⃣ CHECKING ENVIRONMENT VARIABLES")
+print("-" * 70)
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    groq_key = os.getenv("GROQ_API_KEY")
+    jwt_secret = os.getenv("JWT_SECRET")
+    
+    check(
+        "GROQ_API_KEY",
+        groq_key and groq_key != "your-groq-api-key-here",
+        "Not set in .env file. Get key from https://console.groq.com"
+    )
+    check(
+        "JWT_SECRET",
+        jwt_secret and jwt_secret != "your-secret-key-here",
+        "Not set in .env file. Set any random string"
+    )
+except Exception as e:
+    check("Environment variables", False, f"Error loading .env: {str(e)}")
+
+print()
+
+# 5. Database Check
+print("5️⃣ CHECKING DATABASE")
+print("-" * 70)
+
+db_exists = os.path.exists('learning_roadmap.db')
+check("Database file exists", db_exists, "Run: python database.py")
+
+if db_exists:
+    try:
+        conn = sqlite3.connect('learning_roadmap.db')
+        cursor = conn.cursor()
+        
+        # Check tables
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = [row[0] for row in cursor.fetchall()]
+        
+        required_tables = ['users', 'roadmaps', 'skills', 'skill_status']
+        for table in required_tables:
+            check(f"Table '{table}' exists", table in tables, f"Run: python database.py")
+        
+        # Check user count
+        if 'users' in tables:
+            cursor.execute("SELECT COUNT(*) FROM users")
+            user_count = cursor.fetchone()[0]
+            print(f"ℹ️  Registered users: {user_count}")
+        
+        conn.close()
+    except Exception as e:
+        check("Database access", False, f"Error: {str(e)}")
+
+print()
+
+# 6. File Structure
+print("6️⃣ CHECKING FILE STRUCTURE")
+print("-" * 70)
+
+required_files = [
+    'main.py',
+    'database.py',
+    'models.py',
+    'auth.py',
+    'config.py',
+    'ai_service.py',
+    'requirements.txt',
+    '.env'
+]
+
+for file in required_files:
+    check(f"File '{file}' exists", os.path.exists(file), f"Missing required file")
+
+print()
+
+# 7. Server Check
+print("7️⃣ CHECKING IF SERVER IS RUNNING")
+print("-" * 70)
+
+try:
+    import requests
+    response = requests.get("http://localhost:8000", timeout=2)
+    check(
+        f"Server responding (status {response.status_code})",
+        response.status_code == 200,
+        "Server returned non-200 status"
+    )
+except requests.exceptions.ConnectionError:
+    check("Server", False, "Server not running. Run: python -m uvicorn main:app --reload")
+except Exception as e:
+    check("Server", False, f"Error: {str(e)}")
+
+print()
+
+# 8. Test Password Hashing (Critical!)
+print("8️⃣ TESTING PASSWORD HASHING")
+print("-" * 70)
+
+try:
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    test_password = "test123"
+    hashed = pwd_context.hash(test_password)
+    verified = pwd_context.verify(test_password, hashed)
+    
+    check("Password hashing works", verified, "bcrypt hashing failed")
+except Exception as e:
+    check("Password hashing", False, f"Error: {str(e)}. Check bcrypt version!")
+
+print()
+
+# Summary
+print("=" * 70)
+print("📊 DIAGNOSTIC SUMMARY")
+print("=" * 70)
+print(f"Checks passed: {checks_passed}/{total_checks}")
+print()
+
+if checks_passed == total_checks:
+    print("🎉 ALL CHECKS PASSED! Your setup is correct!")
+    print()
+    print("Next steps:")
+    print("1. Start server: python -m uvicorn main:app --reload")
+    print("2. Visit: http://localhost:8000/docs")
+    print("3. Try registering a user")
+else:
+    print("⚠️  ISSUES FOUND:")
+    print()
+    for i, issue in enumerate(issues_found, 1):
+        print(f"{i}. {issue}")
+    print()
+    print("📋 RECOMMENDED FIXES:")
+    print()
+    
+    if any("bcrypt" in issue.lower() for issue in issues_found):
+        print("🔧 Fix bcrypt version:")
+        print("   pip uninstall bcrypt -y")
+        print("   pip install bcrypt==4.0.1")
+        print()
+    
+    if any("env" in issue.lower() or "GROQ" in issue or "JWT" in issue for issue in issues_found):
+        print("🔧 Fix .env file:")
+        print("   1. Create/edit .env file")
+        print("   2. Add: GROQ_API_KEY=your-key-from-groq.com")
+        print("   3. Add: JWT_SECRET=any-random-string")
+        print()
+    
+    if any("database" in issue.lower() for issue in issues_found):
+        print("🔧 Fix database:")
+        print("   python database.py")
+        print()
+    
+    if any("not installed" in issue.lower() for issue in issues_found):
+        print("🔧 Install dependencies:")
+        print("   pip install -r requirements.txt")
+        print()
+
+print("=" * 70)
+print()
+print("💡 TIP: Run this script again after making fixes to verify!")
+print()

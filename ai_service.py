@@ -23,9 +23,11 @@ Learning Stage: {learning_stage}
 Keep it motivating, practical, and beginner-friendly. Focus on real-world applications."""
 
         try:
+            
             headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
+                "Authorization": f"Bearer {self.api_key}",#proves who you are
+                #bearer{self.api_key} is the token(from groq) that proves your identity
+                "Content-Type": "application/json"#type of data being sent
             }
             
             data = {
@@ -33,11 +35,11 @@ Keep it motivating, practical, and beginner-friendly. Focus on real-world applic
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are a helpful career mentor who explains technical concepts clearly."
+                        "content": "You are a helpful career mentor who explains technical concepts clearly."#sets AI personality/behavior
                     },
                     {
                         "role": "user",
-                        "content": prompt
+                        "content": prompt #user's input/question(prompt)
                     }
                 ],
                 "temperature": 0.7,
@@ -51,11 +53,11 @@ Keep it motivating, practical, and beginner-friendly. Focus on real-world applic
                 explanation = result["choices"][0]["message"]["content"].strip()
                 return explanation
             else:
-                print(f"⚠️ Groq API error: {response.status_code}")
+                print(f"Groq API error: {response.status_code}")
                 return self._get_fallback_explanation(skill_name, career_goal)
                 
         except Exception as e:
-            print(f"⚠️ AI generation failed: {str(e)}")
+            print(f" AI generation failed: {str(e)}")
             return self._get_fallback_explanation(skill_name, career_goal)
     
     def _get_fallback_explanation(self, skill_name: str, career_goal: str) -> str:

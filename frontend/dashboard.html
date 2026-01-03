@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div>
+        <h3 id="userName"></h3>
+        <p id="userCareer"></p>
+      </div>
+      <button id="logoutBtn" class="btn-secondary">Logout</button>
+    </div>
+
+    <div class="card progress-hero">
+      <h1 id="progressPercentage">0%</h1>
+      <p>Your learning progress</p>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-top: 24px; font-size: 14px;">
+        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
+          <div style="font-size: 20px; font-weight: bold;" id="completedCount">0</div>
+          <div style="color: rgba(31,41,55,0.6);">Completed</div>
+        </div>
+        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
+          <div style="font-size: 20px; font-weight: bold;" id="inProgressCount">0</div>
+          <div style="color: rgba(31,41,55,0.6);">In Progress</div>
+        </div>
+        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
+          <div style="font-size: 20px; font-weight: bold;" id="remainingCount">0</div>
+          <div style="color: rgba(31,41,55,0.6);">Remaining</div>
+        </div>
+        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
+          <div style="font-size: 20px; font-weight: bold;" id="totalCount">0</div>
+          <div style="color: rgba(31,41,55,0.6);">Total</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px">
+      <h2>Learning roadmap</h2>
+      <div id="skillsContainer"></div>
+    </div>
+
+    <div id="loadingState">Loading…</div>
+    <div id="emptyState" style="display:none">
+      <div style="text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+        <h3>No Roadmap Yet</h3>
+        <p style="margin-top: 8px; color: rgba(31,41,55,0.6);">Let's create your first personalized learning roadmap</p>
+        <button id="createFirstRoadmap" class="btn-primary" style="margin-top: 20px;">✨ Create Roadmap</button>
+      </div>
+    </div>
+
+    <button id="newRoadmapBtn" class="btn-secondary" style="margin-top: 32px; display: none;">+ New Roadmap</button>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

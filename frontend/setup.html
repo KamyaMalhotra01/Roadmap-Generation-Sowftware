@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Setup - Learning Roadmap Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card section-pastel cream">
+      <div class="logo" style="text-align: left;">
+        <h2>🎯 Build Your Learning Plan</h2>
+        <p>Tell us about your goals and we'll create a personalized roadmap</p>
+      </div>
+
+      <form id="setupForm">
+        <!-- Career Goal Selection -->
+        <div style="margin-top: 32px;">
+          <h3>1. Choose Your Career Goal</h3>
+          <p style="font-size: 14px; margin-bottom: 16px;">What do you want to become?</p>
+          <div id="careerGoalsContainer" class="option-grid"></div>
+        </div>
+
+        <!-- Learning Level Selection -->
+        <div style="margin-top: 32px;">
+          <h3>2. Select Your Learning Level</h3>
+          <p style="font-size: 14px; margin-bottom: 16px;">What's your current experience level?</p>
+          <div class="option-grid">
+            <div class="option-card" data-level="Beginner">
+              <div class="option-icon">🌱</div>
+              <div class="option-title">Beginner</div>
+              <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Starting from scratch</p>
+            </div>
+            <div class="option-card" data-level="Intermediate">
+              <div class="option-icon">🚀</div>
+              <div class="option-title">Intermediate</div>
+              <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Have some experience</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Skills -->
+        <div style="margin-top: 32px;">
+          <h3>3. Add Your Existing Skills (Optional)</h3>
+          <p style="font-size: 14px; margin-bottom: 16px;">What skills do you already know?</p>
+          <div style="display: flex; gap: 8px;">
+            <input 
+              type="text" 
+              id="skillInput" 
+              placeholder="e.g., HTML, CSS, JavaScript"
+              style="flex: 1;"
+            >
+            <button type="button" id="addSkillBtn" class="btn-secondary">Add</button>
+          </div>
+          <div id="skillsContainer" style="margin-top: 12px;">
+            <p style="color: rgba(31,41,55,0.6); font-size: 14px;">No skills added yet</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-primary" style="margin-top: 32px;">
+          ✨ Generate My Roadmap
+        </button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="loadingMessage" style="display: none; text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+        <h3>Creating Your Personalized Roadmap...</h3>
+        <p style="margin-top: 8px;">AI is analyzing your goals and generating custom skill explanations</p>
+        <div style="margin-top: 20px;">
+          <div class="progress-bar" style="max-width: 400px; margin: 0 auto;">
+            <div class="progress-fill" style="width: 100%; animation: loading 2s ease-in-out infinite;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes loading {
+      0%, 100% { width: 30%; }
+      50% { width: 100%; }
+    }
+  </style>
+
+  <script src="js/api.js"></script>
+  <script src="js/setup.js"></script>
+</body>
+</html>
