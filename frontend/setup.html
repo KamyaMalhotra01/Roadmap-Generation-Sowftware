@@ -1,91 +1,647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Setup - Learning Roadmap Tracker</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Learning Roadmap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-subtitle {
+            color: #6B7280;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .radio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .radio-card {
+            position: relative;
+        }
+
+        .radio-input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-label {
+            display: block;
+            padding: 1.5rem;
+            background: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .radio-input:checked + .radio-label {
+            background: #EEF2FF;
+            border-color: #4F46E5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .radio-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .radio-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .radio-desc {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .tag-input-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #4338CA;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .btn-secondary:hover {
+            background: #E5E7EB;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            padding: 0.5rem 1rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .actions .btn {
+            flex: 1;
+        }
+
+        .summary-card {
+            background: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #6B7280;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 6px solid #E5E7EB;
+            border-top-color: #4F46E5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-text {
+            color: #6B7280;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 2rem;
+            }
+
+            .radio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card section-pastel cream">
-      <div class="logo" style="text-align: left;">
-        <h2>🎯 Build Your Learning Plan</h2>
-        <p>Tell us about your goals and we'll create a personalized roadmap</p>
-      </div>
-
-      <form id="setupForm">
-        <!-- Career Goal Selection -->
-        <div style="margin-top: 32px;">
-          <h3>1. Choose Your Career Goal</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">What do you want to become?</p>
-          <div id="careerGoalsContainer" class="option-grid"></div>
+    <div class="container">
+        <div class="header">
+            <h1 class="header-title">Create Your Learning Roadmap</h1>
+            <p class="header-subtitle">Let's personalize your learning journey</p>
         </div>
 
-        <!-- Learning Level Selection -->
-        <div style="margin-top: 32px;">
-          <h3>2. Select Your Learning Level</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">What's your current experience level?</p>
-          <div class="option-grid">
-            <div class="option-card" data-level="Beginner">
-              <div class="option-icon">🌱</div>
-              <div class="option-title">Beginner</div>
-              <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Starting from scratch</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 33%"></div>
+        </div>
+
+        <div class="card">
+            <!-- Step 1: Career Goal -->
+            <div class="step active" id="step1">
+                <h2 class="step-title">What's your career goal?</h2>
+                <p class="step-subtitle">Choose the path you want to pursue</p>
+
+                <div class="form-group">
+                    <div class="radio-grid" id="careerGoals">
+                        <!-- Career goals will be populated here -->
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="goBack()">Cancel</button>
+                    <button class="btn btn-primary" onclick="nextStep()" id="step1Next">
+                        Next →
+                    </button>
+                </div>
             </div>
-            <div class="option-card" data-level="Intermediate">
-              <div class="option-icon">🚀</div>
-              <div class="option-title">Intermediate</div>
-              <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Have some experience</p>
+
+            <!-- Step 2: Learning Level -->
+            <div class="step" id="step2">
+                <h2 class="step-title">What's your experience level?</h2>
+                <p class="step-subtitle">This helps us customize your roadmap</p>
+
+                <div class="form-group">
+                    <div class="radio-grid">
+                        <div class="radio-card">
+                            <input type="radio" id="beginner" name="level" value="Beginner" class="radio-input">
+                            <label for="beginner" class="radio-label">
+                                <div class="radio-icon">🌱</div>
+                                <div class="radio-title">Beginner</div>
+                                <div class="radio-desc">Just starting out</div>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" id="intermediate" name="level" value="Intermediate" class="radio-input">
+                            <label for="intermediate" class="radio-label">
+                                <div class="radio-icon">📈</div>
+                                <div class="radio-title">Intermediate</div>
+                                <div class="radio-desc">Have some experience</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button class="btn btn-primary" onclick="nextStep()" id="step2Next">
+                        Next →
+                    </button>
+                </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Existing Skills -->
-        <div style="margin-top: 32px;">
-          <h3>3. Add Your Existing Skills (Optional)</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">What skills do you already know?</p>
-          <div style="display: flex; gap: 8px;">
-            <input 
-              type="text" 
-              id="skillInput" 
-              placeholder="e.g., HTML, CSS, JavaScript"
-              style="flex: 1;"
-            >
-            <button type="button" id="addSkillBtn" class="btn-secondary">Add</button>
-          </div>
-          <div id="skillsContainer" style="margin-top: 12px;">
-            <p style="color: rgba(31,41,55,0.6); font-size: 14px;">No skills added yet</p>
-          </div>
-        </div>
+            <!-- Step 3: Existing Skills -->
+            <div class="step" id="step3">
+                <h2 class="step-title">What skills do you already have?</h2>
+                <p class="step-subtitle">Optional: List skills you've already learned</p>
 
-        <!-- Submit Button -->
-        <button type="submit" class="btn-primary" style="margin-top: 32px;">
-          ✨ Generate My Roadmap
-        </button>
-      </form>
+                <div class="form-group">
+                    <div class="tag-input-container">
+                        <input 
+                            type="text" 
+                            id="skillInput" 
+                            class="form-input" 
+                            placeholder="e.g., HTML, CSS, JavaScript"
+                            onkeypress="handleSkillInput(event)"
+                        >
+                        <button class="btn btn-primary" onclick="addSkill()">Add</button>
+                    </div>
+                    <div class="tags-list" id="skillsTags"></div>
+                </div>
 
-      <!-- Loading State -->
-      <div id="loadingMessage" style="display: none; text-align: center; padding: 40px;">
-        <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
-        <h3>Creating Your Personalized Roadmap...</h3>
-        <p style="margin-top: 8px;">AI is analyzing your goals and generating custom skill explanations</p>
-        <div style="margin-top: 20px;">
-          <div class="progress-bar" style="max-width: 400px; margin: 0 auto;">
-            <div class="progress-fill" style="width: 100%; animation: loading 2s ease-in-out infinite;"></div>
-          </div>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Next →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Create -->
+            <div class="step" id="step4">
+                <h2 class="step-title">Review Your Roadmap</h2>
+                <p class="step-subtitle">Everything look good?</p>
+
+                <div class="summary-card">
+                    <div class="summary-item">
+                        <span class="summary-label">Career Goal</span>
+                        <span class="summary-value" id="summaryGoal">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Experience Level</span>
+                        <span class="summary-value" id="summaryLevel">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Existing Skills</span>
+                        <span class="summary-value" id="summarySkills">None</span>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button class="btn btn-primary" onclick="createRoadmap()" id="createBtn">
+                        Create Roadmap 🚀
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <style>
-    @keyframes loading {
-      0%, 100% { width: 30%; }
-      50% { width: 100%; }
-    }
-  </style>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3 class="loading-title">Creating Your Roadmap</h3>
+            <p class="loading-text">Generating personalized learning path with AI assistance...</p>
+        </div>
+    </div>
 
-  <script src="js/api.js"></script>
-  <script src="js/setup.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        let currentStep = 1;
+        let formData = {
+            career_goal: '',
+            learning_level: '',
+            existing_skills: []
+        };
+
+        // Load career goals
+        async function loadCareerGoals() {
+            try {
+                const response = await fetch(`${API_BASE}/career-goals`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                
+                const container = document.getElementById('careerGoals');
+                const icons = ['💻', '📊', '📱'];
+                
+                container.innerHTML = data.career_goals.map((goal, index) => `
+                    <div class="radio-card">
+                        <input type="radio" id="goal${index}" name="goal" value="${goal}" class="radio-input">
+                        <label for="goal${index}" class="radio-label">
+                            <div class="radio-icon">${icons[index] || '🎯'}</div>
+                            <div class="radio-title">${goal}</div>
+                        </label>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Failed to load career goals:', error);
+                alert('Failed to load career goals. Please refresh the page.');
+            }
+        }
+
+        // Navigation
+        function nextStep() {
+            if (currentStep === 1) {
+                const selected = document.querySelector('input[name="goal"]:checked');
+                if (!selected) {
+                    alert('Please select a career goal');
+                    return;
+                }
+                formData.career_goal = selected.value;
+            } else if (currentStep === 2) {
+                const selected = document.querySelector('input[name="level"]:checked');
+                if (!selected) {
+                    alert('Please select your experience level');
+                    return;
+                }
+                formData.learning_level = selected.value;
+            }
+
+            if (currentStep === 4) return;
+
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            currentStep++;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            updateProgress();
+
+            if (currentStep === 4) {
+                updateSummary();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep === 1) return;
+
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            currentStep--;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / 4) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        // Skills management
+        function handleSkillInput(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addSkill();
+            }
+        }
+
+        function addSkill() {
+            const input = document.getElementById('skillInput');
+            const skill = input.value.trim();
+
+            if (skill && !formData.existing_skills.includes(skill)) {
+                formData.existing_skills.push(skill);
+                renderSkills();
+                input.value = '';
+            }
+        }
+
+        function removeSkill(skill) {
+            formData.existing_skills = formData.existing_skills.filter(s => s !== skill);
+            renderSkills();
+        }
+
+        function renderSkills() {
+            const container = document.getElementById('skillsTags');
+            container.innerHTML = formData.existing_skills.map(skill => `
+                <div class="tag">
+                    ${skill}
+                    <span class="tag-remove" onclick="removeSkill('${skill}')">×</span>
+                </div>
+            `).join('');
+        }
+
+        // Summary
+        function updateSummary() {
+            document.getElementById('summaryGoal').textContent = formData.career_goal;
+            document.getElementById('summaryLevel').textContent = formData.learning_level;
+            document.getElementById('summarySkills').textContent = 
+                formData.existing_skills.length > 0 
+                    ? formData.existing_skills.join(', ') 
+                    : 'None';
+        }
+
+        // Create roadmap
+        async function createRoadmap() {
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true;
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            try {
+                const response = await fetch(`${API_BASE}/roadmaps/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('currentRoadmapId', data.id);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'roadmap.html';
+                    }, 1500);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create roadmap');
+                }
+
+            } catch (error) {
+                console.error('Create roadmap error:', error);
+                alert(error.message || 'Failed to create roadmap. Please try again.');
+                document.getElementById('loadingOverlay').classList.remove('active');
+                btn.disabled = false;
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Initialize
+        loadCareerGoals();
+    </script>
 </body>
 </html>

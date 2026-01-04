@@ -89,56 +89,74 @@ function renderDashboard() {
 }
 
 // Render skills list
-function renderSkills(skills) {
-    if (skills.length === 0) {
-        skillsContainer.innerHTML = '<p style="text-align: center; color: rgba(31,41,55,0.6);">No skills in this roadmap</p>';
-        return;
-    }
+ffunction renderSkills(skills) {
+    const container = document.getElementById('skillsContainer');
 
-    skillsContainer.innerHTML = skills.map(skill => `
-        <div class="skill-card ${skill.status === 'COMPLETED' ? 'completed' : ''}" data-skill-id="${skill.id}">
-            <div class="skill-header">
-                <div class="skill-info">
-                    <h3>${skill.skill_name}</h3>
-                    <span class="skill-badge">${skill.learning_stage}</span>
+    container.className = 'learning-timeline space-y-4';
+
+    container.innerHTML = skills.map((skill, index) => {
+        const isCompleted = skill.status === 'COMPLETED';
+        const isActive = skill.status === 'IN_PROGRESS';
+        const isLocked = skill.status === 'NOT_STARTED' && index > 0 && skills[index - 1].status !== 'COMPLETED';
+
+        return `
+            <div class="level-card
+                ${isCompleted ? 'completed' : ''}
+                ${isActive ? 'active' : ''}
+                ${isLocked ? 'locked' : ''}"
+                data-skill-id="${skill.id}"
+            >
+
+                <div class="level-header">
+                    <div>
+                        <div class="level-index">
+                            LEVEL ${String(index + 1).padStart(2, '0')}
+                        </div>
+
+                        <div class="level-title">
+                            ${skill.skill_name}
+                        </div>
+
+                        <div class="level-meta">
+                            ${skill.estimated_hours ? `Estimated time: ${skill.estimated_hours} hours` : ''}
+                        </div>
+                    </div>
+
+                    <div class="status-badge
+                        ${isCompleted ? 'status-completed' : isActive ? 'status-active' : 'status-locked'}">
+                        ${isCompleted ? 'Completed' : isActive ? 'Active' : 'Locked'}
+                    </div>
                 </div>
-                <div class="skill-status">
-                    <button 
-                        class="status-btn ${skill.status === 'NOT_STARTED' ? 'active' : ''}" 
+
+                ${skill.why_important ? `
+                    <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+                        ${skill.why_important}
+                    </p>
+                ` : ''}
+
+                <div class="flex gap-2 mt-4">
+                    <button class="status-btn ${skill.status === 'NOT_STARTED' ? 'active' : ''}"
                         data-status="NOT_STARTED"
-                        data-status-id="${skill.status_id}"
-                        title="Not Started"
-                    >
-                        ${statusIcons['NOT_STARTED']}
+                        data-status-id="${skill.status_id}">
+                        Not started
                     </button>
-                    <button 
-                        class="status-btn ${skill.status === 'IN_PROGRESS' ? 'active' : ''}" 
+
+                    <button class="status-btn ${skill.status === 'IN_PROGRESS' ? 'active' : ''}"
                         data-status="IN_PROGRESS"
-                        data-status-id="${skill.status_id}"
-                        title="In Progress"
-                    >
-                        ${statusIcons['IN_PROGRESS']}
+                        data-status-id="${skill.status_id}">
+                        In progress
                     </button>
-                    <button 
-                        class="status-btn ${skill.status === 'COMPLETED' ? 'active' : ''}" 
+
+                    <button class="status-btn ${skill.status === 'COMPLETED' ? 'active' : ''}"
                         data-status="COMPLETED"
-                        data-status-id="${skill.status_id}"
-                        title="Completed"
-                    >
-                        ${statusIcons['COMPLETED']}
+                        data-status-id="${skill.status_id}">
+                        Completed
                     </button>
                 </div>
             </div>
-            ${skill.why_important ? `
-                <div class="skill-description">${skill.why_important}</div>
-            ` : ''}
-            ${skill.estimated_hours ? `
-                <div class="skill-hours">⏱️ Estimated: ${skill.estimated_hours} hours</div>
-            ` : ''}
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
-    // Add status button event listeners
     document.querySelectorAll('.status-btn').forEach(btn => {
         btn.addEventListener('click', handleStatusChange);
     });

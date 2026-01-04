@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - RoadmapAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .skill-card {
+            transition: all 0.3s ease;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .skill-card.completed {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        }
+        
+        .status-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid transparent;
+        }
+        
+        .status-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-btn.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        /* Dark mode styles */
+        .dark {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        
+        .dark .bg-white {
+            background-color: #1e293b;
+        }
+        
+        .dark .bg-gray-50 {
+            background-color: #0f172a;
+        }
+        
+        .dark .text-gray-900 {
+            color: #f1f5f9;
+        }
+        
+        .dark .text-gray-600 {
+            color: #94a3b8;
+        }
+        
+        .dark .border-gray-200 {
+            border-color: #334155;
+        }
+        
+        .dark .skill-card {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+        
+        /* Notification styles */
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+
+/* Neutral background */
+body {
+    background-color: #f8fafc;
+}
+
+/* Timeline container */
+.learning-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+/* Vertical guide line */
+.learning-timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(15, 23, 42, 0.08);
+}
+
+/* Level card */
+.level-card {
+    background: white;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.18s ease;
+}
+
+/* Hover (subtle only) */
+.level-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+/* Active level highlight */
+.level-card.active {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Completed level */
+.level-card.completed {
+    background: #f0fdf4;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+/* Locked level */
+.level-card.locked {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+/* Level header */
+.level-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+/* Level number */
+.level-index {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+/* Level title */
+.level-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-top: 4px;
+}
+
+/* Meta row */
+.level-meta {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Status badge */
+.status-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.status-completed {
+    color: #166534;
+    background: #dcfce7;
+    border-color: rgba(22, 101, 52, 0.2);
+}
+
+.status-active {
+    color: #3730a3;
+    background: #eef2ff;
+    border-color: rgba(55, 48, 163, 0.25);
+}
+
+.status-locked {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: rgba(100, 116, 139, 0.25);
+}
+
+/* Status buttons refinement */
+.status-btn {
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+.status-btn.active {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: #6366f1;
+    transform: none;
+}
+
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        🎯 RoadmapAI
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                        <span id="darkModeIcon">🌙</span>
+                    </button>
+                    <button id="exportBtn" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium">
+                        📥 Export PDF
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+                            <span id="userName" class="font-medium">User</span>
+                            <span>👤</span>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                            <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600"></div>
+            <p class="mt-4 text-gray-600 font-medium">Loading your roadmap...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">📍</div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">No Roadmap Yet</h2>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                Let's create your first learning roadmap and start your journey to success!
+            </p>
+            <a href="setup.html" class="inline-block gradient-bg text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                Create Your First Roadmap →
+            </a>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="hidden">
+            <!-- Welcome Header -->
+            <div class="mb-8">
+                <h1 id="welcomeText" class="text-3xl font-bold text-gray-900 mb-2">
+                    Hello, User! 👋
+                </h1>
+                <p id="careerGoalText" class="text-gray-600 text-lg">
+                    Web Developer - Beginner
+                </p>
+            </div>
+
+            <!-- Progress Hero Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-200">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <!-- Progress Ring -->
+                    <div class="flex justify-center">
+                        <div class="relative">
+                            <svg class="progress-ring" width="200" height="200">
+                                <circle
+                                    class="text-gray-200"
+                                    stroke-width="12"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="90"
+                                    cx="100"
+                                    cy="100"
+                                />
+                                <circle
+                                    id="progressCircle"
+                                    class="progress-ring-circle text-purple-600"
+                                    stroke-width="12"
+                                    stroke-dasharray="565.48"
+                                    stroke-dashoffset="565.48"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="90"
+                                    cx="100"
+                                    cy="100"
+                                />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div id="progressPercentage" class="text-4xl font-bold text-gray-900">0%</div>
+                                    <div class="text-sm text-gray-500">Complete</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                            <div class="text-3xl font-bold text-green-600 mb-1" id="completedCount">0</div>
+                            <div class="text-sm text-gray-600 font-medium">✅ Completed</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                            <div class="text-3xl font-bold text-blue-600 mb-1" id="inProgressCount">0</div>
+                            <div class="text-sm text-gray-600 font-medium">🔵 In Progress</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border border-gray-200">
+                            <div class="text-3xl font-bold text-gray-600 mb-1" id="remainingCount">0</div>
+                            <div class="text-sm text-gray-600 font-medium">⚪ Remaining</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-200">
+                            <div class="text-3xl font-bold text-purple-600 mb-1" id="totalCount">0</div>
+                            <div class="text-sm text-gray-600 font-medium">📚 Total Skills</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex flex-wrap gap-3 mb-8">
+                <a href="setup.html" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                    ➕ New Roadmap
+                </a>
+                <button id="exportBtnTop" class="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                    📥 Export PDF
+                </button>
+                <button id="shareBtn" class="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                    🔗 Share
+                </button>
+            </div>
+
+            <!-- Skills List -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Your Learning Path</h2>
+                    <div class="flex space-x-2">
+                        <button class="filter-btn px-4 py-2 rounded-lg bg-purple-100 text-purple-700 font-medium">
+                            All
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium">
+                            Beginner
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium">
+                            Intermediate
+                        </button>
+                    </div>
+                </div>
+
+                <div id="skillsContainer" class="space-y-4">
+                    <!-- Skills will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        let currentRoadmap = null;
+        let currentUser = null;
+
+        // Dark Mode
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        
+        // Check saved preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+            darkModeIcon.textContent = '☀️';
+        }
+        
+        darkModeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            darkModeIcon.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // User Menu Toggle
+        document.getElementById('userMenuBtn').addEventListener('click', () => {
+            document.getElementById('userMenu').classList.toggle('hidden');
+        });
+
+        // Close menu on outside click
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('userMenu');
+            const btn = document.getElementById('userMenuBtn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification px-6 py-4 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white font-medium`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Get Token
+        function getToken() {
+            return localStorage.getItem('access_token');
+        }
+
+        // API Fetch Helper
+        async function apiFetch(endpoint, options = {}) {
+            const token = getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` }),
+                ...options.headers
+            };
+
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = 'login.html';
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            try {
+                const data = await apiFetch('/dashboard');
+                
+                if (data.roadmaps.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+
+                currentRoadmap = data.roadmaps[0];
+                currentUser = data.user;
+                
+                renderDashboard();
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                showNotification('Failed to load dashboard', 'error');
+            }
+        }
+
+        // Show Empty State
+        function showEmptyState() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+        }
+
+        // Render Dashboard
+        function renderDashboard() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.remove('hidden');
+
+            // Update user info
+            document.getElementById('userName').textContent = currentUser.username;
+            document.getElementById('welcomeText').textContent = `Hello, ${currentUser.username}! 👋`;
+            document.getElementById('careerGoalText').textContent = 
+                `${currentRoadmap.career_goal} - ${currentRoadmap.learning_level}`;
+
+            // Calculate stats
+            const total = currentRoadmap.skills.length;
+            const completed = currentRoadmap.skills.filter(s => s.status === 'COMPLETED').length;
+            const inProgress = currentRoadmap.skills.filter(s => s.status === 'IN_PROGRESS').length;
+            const remaining = total - completed - inProgress;
+            const progress = currentRoadmap.progress_percentage;
+
+            // Update stats
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('progressPercentage').textContent = `${Math.round(progress)}%`;
+
+            // Update progress ring
+            const circle = document.getElementById('progressCircle');
+            const circumference = 565.48;
+            const offset = circumference - (progress / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Render skills
+            renderSkills(currentRoadmap.skills);
+        }
+
+        // Render Skills
+        function renderSkills(skills) {
+            const container = document.getElementById('skillsContainer');
+            container.innerHTML = skills.map(skill => `
+                <div class="skill-card bg-white rounded-xl p-6 border-2 border-gray-200 ${skill.status === 'COMPLETED' ? 'completed' : ''}" 
+                     data-skill-id="${skill.id}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${skill.skill_name}</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                    ${skill.learning_stage}
+                                </span>
+                                ${skill.estimated_hours ? `
+                                    <span class="text-gray-500 text-sm">⏱️ ${skill.estimated_hours} hours</span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="status-btn ${skill.status === 'NOT_STARTED' ? 'active' : ''}" 
+                                    data-status="NOT_STARTED" data-status-id="${skill.status_id}" title="Not Started">
+                                ⚪
+                            </button>
+                            <button class="status-btn ${skill.status === 'IN_PROGRESS' ? 'active' : ''}" 
+                                    data-status="IN_PROGRESS" data-status-id="${skill.status_id}" title="In Progress">
+                                🔵
+                            </button>
+                            <button class="status-btn ${skill.status === 'COMPLETED' ? 'active' : ''}" 
+                                    data-status="COMPLETED" data-status-id="${skill.status_id}" title="Completed">
+                                ✅
+                            </button>
+                        </div>
+                    </div>
+                    ${skill.why_important ? `
+                        <p class="text-gray-600 leading-relaxed">${skill.why_important}</p>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.addEventListener('click', handleStatusChange);
+            });
+        }
+
+        // Handle Status Change
+        async function handleStatusChange(e) {
+            const btn = e.currentTarget;
+            const statusId = parseInt(btn.dataset.statusId);
+            const newStatus = btn.dataset.status;
+            
+            const skillCard = btn.closest('.skill-card');
+            const allButtons = skillCard.querySelectorAll('.status-btn');
+            
+            try {
+                // Optimistic UI update
+                allButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                if (newStatus === 'COMPLETED') {
+                    skillCard.classList.add('completed');
+                    showNotification('🎉 Skill completed! Keep it up!');
+                } else {
+                    skillCard.classList.remove('completed');
+                }
+                
+                // Update backend
+                await apiFetch(`/skills/${statusId}/update`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                // Reload dashboard
+                await loadDashboard();
+                
+            } catch (error) {
+                console.error('Failed to update status:', error);
+                showNotification('Failed to update status', 'error');
+                loadDashboard(); // Revert UI
+            }
+        }
+
+        // Export PDF (Simple version)
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            showNotification('Export feature coming soon! 📥');
+        });
+
+        document.getElementById('exportBtnTop')?.addEventListener('click', () => {
+            showNotification('Export feature coming soon! 📥');
+        });
+
+        // Share
+        document.getElementById('shareBtn')?.addEventListener('click', () => {
+            showNotification('Share feature coming soon! 🔗');
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('access_token');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Check authentication
+        if (!getToken()) {
+            window.location.href = 'login.html';
+        } else {
+            loadDashboard();
+        }
+    </script>
+</body>
+</html>

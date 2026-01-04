@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roadmap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F9FAFB;
+            color: #1F2937;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: #F3F4F6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6B7280;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #E5E7EB;
+        }
+
+        .navbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .navbar-badge {
+            padding: 0.25rem 0.75rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+
+        .progress-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .progress-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+        }
+
+        .progress-svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: #E5E7EB;
+            stroke-width: 8;
+        }
+
+        .progress-bar-circle {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .stats-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #F9FAFB;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .roadmap-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: calc(100vh - 140px);
+        }
+
+        .roadmap-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #F3F4F6;
+        }
+
+        .roadmap-path {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .path-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #E5E7EB 0%, #D1D5DB 100%);
+            transform: translateX(-50%);
+        }
+
+        .skill-node {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .skill-card {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .skill-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-color: #4F46E5;
+        }
+
+        .skill-card.completed {
+            border-color: #10B981;
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+        }
+
+        .skill-card.in-progress {
+            border-color: #F59E0B;
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+        }
+
+        .skill-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: #E5E7EB;
+        }
+
+        .skill-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .skill-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .skill-stage {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        .skill-status {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.completed {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-badge.in-progress {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-badge.not-started {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .status-badge.locked {
+            background: #F3F4F6;
+            color: #9CA3AF;
+        }
+
+        .skill-description {
+            color: #6B7280;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .skill-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: #6B7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .skill-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .action-btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .action-btn-primary:hover {
+            background: #4338CA;
+        }
+
+        .action-btn-secondary {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .action-btn-secondary:hover {
+            background: #E5E7EB;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E5E7EB;
+            border-top-color: #4F46E5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .close-btn {
+            background: #F3F4F6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #6B7280;
+        }
+
+        .close-btn:hover {
+            background: #E5E7EB;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <div>
+                <div class="navbar-title" id="roadmapTitle">Loading...</div>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <span class="navbar-badge" id="roadmapLevel">Beginner</span>
+            <button class="btn btn-primary" onclick="openAITeacher()">💬 AI Teacher</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="progress-card">
+                <div class="progress-title">Your Progress</div>
+                <div class="progress-circle">
+                    <svg class="progress-svg" width="120" height="120">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
+                        <circle id="progressCircle" class="progress-bar-circle" cx="60" cy="60" r="52" 
+                                stroke-dasharray="326.73" stroke-dashoffset="326.73"></circle>
+                    </svg>
+                    <div class="progress-text" id="progressPercent">0%</div>
+                </div>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value" id="completedCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">In Progress</span>
+                        <span class="stat-value" id="inProgressCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Remaining</span>
+                        <span class="stat-value" id="remainingCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Roadmap -->
+        <main class="roadmap-content">
+            <div id="loadingState" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading your roadmap...</p>
+            </div>
+
+            <div id="roadmapPath" class="roadmap-path" style="display: none;">
+                <div class="path-line"></div>
+                <!-- Skills will be populated here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Skill Detail Modal -->
+    <div id="skillModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Skill Details</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        const token = localStorage.getItem('token');
+        const roadmapId = localStorage.getItem('currentRoadmapId');
+
+        if (!token || !roadmapId) {
+            window.location.href = 'dashboard.html';
+        }
+
+        let currentRoadmap = null;
+
+        // API Helper
+        async function apiCall(endpoint, options = {}) {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            return response.json();
+        }
+
+        // Load Roadmap
+        async function loadRoadmap() {
+            try {
+                const data = await apiCall('/dashboard');
+                currentRoadmap = data.roadmaps.find(r => r.id == roadmapId);
+
+                if (!currentRoadmap) {
+                    alert('Roadmap not found');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // Update header
+                document.getElementById('roadmapTitle').textContent = currentRoadmap.career_goal;
+                document.getElementById('roadmapLevel').textContent = currentRoadmap.learning_level;
+
+                // Update progress
+                updateProgress();
+
+                // Render skills
+                renderSkills();
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('roadmapPath').style.display = 'block';
+
+            } catch (error) {
+                console.error('Failed to load roadmap:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <p style="color: #EF4444;">Failed to load roadmap. Please try again.</p>
+                `;
+            }
+        }
+
+        // Update Progress
+        function updateProgress() {
+            const skills = currentRoadmap.skills;
+            const total = skills.length;
+            const completed = skills.filter(s => s.status === 'COMPLETED').length;
+            const inProgress = skills.filter(s => s.status === 'IN_PROGRESS').length;
+            const remaining = total - completed - inProgress;
+            const progress = currentRoadmap.progress_percentage;
+
+            // Update circle
+            const circumference = 326.73;
+            const offset = circumference - (progress / 100 * circumference);
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+
+            // Update stats
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('remainingCount').textContent = remaining;
+        }
+
+        // Render Skills
+        function renderSkills() {
+            const container = document.getElementById('roadmapPath');
+            const skills = currentRoadmap.skills;
+
+            container.innerHTML = '<div class="path-line"></div>' + skills.map((skill, index) => {
+                const statusClass = skill.status.toLowerCase().replace('_', '-');
+                const statusIcon = {
+                    'COMPLETED': '✓',
+                    'IN_PROGRESS': '⋯',
+                    'NOT_STARTED': '○'
+                }[skill.status];
+
+                return `
+                    <div class="skill-node">
+                        <div class="skill-card ${statusClass}" onclick="openSkillDetail(${index})">
+                            <div class="skill-header">
+                                <div>
+                                    <h3 class="skill-title">${skill.skill_name}</h3>
+                                    <span class="skill-stage">${skill.learning_stage}</span>
+                                </div>
+                                <span class="status-badge ${statusClass}">
+                                    ${statusIcon} ${skill.status.replace('_', ' ')}
+                                </span>
+                            </div>
+
+                            ${skill.why_important ? `
+                                <p class="skill-description">${skill.why_important}</p>
+                            ` : ''}
+
+                            <div class="skill-meta">
+                                ${skill.estimated_hours ? `<span>⏱️ ${skill.estimated_hours} hours</span>` : ''}
+                                <span>📍 Step ${index + 1} of ${skills.length}</span>
+                            </div>
+
+                            <div class="skill-actions">
+                                ${skill.status !== 'COMPLETED' ? `
+                                    <button class="action-btn action-btn-primary" 
+                                            onclick="markAsInProgress(${skill.status_id}, event)">
+                                        Start Learning
+                                    </button>
+                                ` : ''}
+                                ${skill.status === 'IN_PROGRESS' ? `
+                                    <button class="action-btn action-btn-primary" 
+                                            onclick="markAsCompleted(${skill.status_id}, event)">
+                                        Mark Complete
+                                    </button>
+                                ` : ''}
+                                <button class="action-btn action-btn-secondary" 
+                                        onclick="openSkillDetail(${index}, event)">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Status Update Functions
+        async function markAsInProgress(statusId, event) {
+            event.stopPropagation();
+            await updateStatus(statusId, 'IN_PROGRESS');
+        }
+
+        async function markAsCompleted(statusId, event) {
+            event.stopPropagation();
+            await updateStatus(statusId, 'COMPLETED');
+        }
+
+        async function updateStatus(statusId, newStatus) {
+            try {
+                await apiCall(`/skills/${statusId}/update`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                // Reload roadmap
+                await loadRoadmap();
+
+            } catch (error) {
+                console.error('Failed to update status:', error);
+                alert('Failed to update skill status. Please try again.');
+            }
+        }
+
+        // Skill Detail Modal
+        function openSkillDetail(index, event) {
+            if (event) event.stopPropagation();
+            
+            const skill = currentRoadmap.skills[index];
+            const modal = document.getElementById('skillModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = skill.skill_name;
+
+            modalBody.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #EEF2FF; 
+                                color: #4F46E5; border-radius: 12px; font-size: 0.875rem; font-weight: 500;">
+                        ${skill.learning_stage}
+                    </div>
+                </div>
+
+                ${skill.why_important ? `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.875rem; font-weight: 600; color: #6B7280; 
+                                   margin-bottom: 0.5rem; text-transform: uppercase;">
+                            Why This Matters
+                        </h4>
+                        <p style="color: #1F2937; line-height: 1.6;">${skill.why_important}</p>
+                    </div>
+                ` : ''}
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #6B7280; 
+                               margin-bottom: 0.75rem; text-transform: uppercase;">
+                        Recommended Resources
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(skill.skill_name + ' tutorial')}" 
+                           target="_blank" 
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; 
+                                  background: #F9FAFB; border-radius: 8px; text-decoration: none; 
+                                  color: #1F2937; transition: all 0.2s;">
+                            <span style="font-size: 1.5rem;">📺</span>
+                            <div>
+                                <div style="font-weight: 500;">Video Tutorial</div>
+                                <div style="font-size: 0.875rem; color: #6B7280;">YouTube lessons</div>
+                            </div>
+                        </a>
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(skill.skill_name + ' documentation')}" 
+                           target="_blank"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; 
+                                  background: #F9FAFB; border-radius: 8px; text-decoration: none; 
+                                  color: #1F2937; transition: all 0.2s;">
+                            <span style="font-size: 1.5rem;">📚</span>
+                            <div>
+                                <div style="font-weight: 500;">Documentation</div>
+                                <div style="font-size: 0.875rem; color: #6B7280;">Official docs & guides</div>
+                            </div>
+                        </a>
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(skill.skill_name + ' practice problems')}" 
+                           target="_blank"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; 
+                                  background: #F9FAFB; border-radius: 8px; text-decoration: none; 
+                                  color: #1F2937; transition: all 0.2s;">
+                            <span style="font-size: 1.5rem;">💻</span>
+                            <div>
+                                <div style="font-weight: 500;">Practice</div>
+                                <div style="font-size: 0.875rem; color: #6B7280;">Coding exercises</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    ${skill.status !== 'COMPLETED' ? `
+                        <button class="action-btn action-btn-primary" 
+                                onclick="markAsInProgress(${skill.status_id}); closeModal();">
+                            ${skill.status === 'NOT_STARTED' ? 'Start Learning' : 'Continue'}
+                        </button>
+                    ` : ''}
+                    ${skill.status === 'IN_PROGRESS' ? `
+                        <button class="action-btn action-btn-primary" 
+                                onclick="markAsCompleted(${skill.status_id}); closeModal();">
+                            Mark as Complete
+                        </button>
+                    ` : ''}
+                    <button class="action-btn action-btn-secondary" onclick="closeModal()">
+                        Close
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('skillModal').classList.remove('active');
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function openAITeacher() {
+            localStorage.setItem('aiContext', JSON.stringify({
+                career_goal: currentRoadmap.career_goal,
+                learning_level: currentRoadmap.learning_level,
+                current_skills: currentRoadmap.skills.filter(s => s.status !== 'NOT_STARTED').map(s => s.skill_name)
+            }));
+            window.location.href = 'ai-teacher.html';
+        }
+
+        // Close modal on outside click
+        document.getElementById('skillModal').addEventListener('click', (e) => {
+            if (e.target.id === 'skillModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadRoadmap();
+    </script>
+</body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Teacher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F9FAFB;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: #F3F4F6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6B7280;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #E5E7EB;
+        }
+
+        .navbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .context-badge {
+            padding: 0.25rem 0.75rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid #F3F4F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .message-content {
+            background: #F9FAFB;
+            padding: 1rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            color: #1F2937;
+        }
+
+        .message.user .message-content {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            margin-top: 0.25rem;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9CA3AF;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .input-container {
+            padding: 1.5rem;
+            border-top: 2px solid #F3F4F6;
+            background: white;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .input-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quick-prompts {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-prompt {
+            padding: 0.5rem 1rem;
+            background: #F3F4F6;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-prompt:hover {
+            background: #E5E7EB;
+            color: #1F2937;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            max-height: 150px;
+            transition: border-color 0.2s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
+
+        .send-btn {
+            padding: 1rem 1.5rem;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #4338CA;
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6B7280;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text {
+            margin-bottom: 2rem;
+        }
+
+        .example-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .example-prompt {
+            padding: 1rem;
+            background: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .example-prompt:hover {
+            border-color: #4F46E5;
+            background: white;
+        }
+
+        .example-prompt-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .example-prompt-text {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+            }
+
+            .messages-container {
+                padding: 1rem;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .example-prompts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="back-btn" onclick="goBack()">← Back to Roadmap</button>
+            <div class="navbar-title">AI Teacher 🤖</div>
+        </div>
+        <span class="context-badge" id="contextBadge">Loading...</span>
+    </nav>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <h2>Your Personal Learning Assistant</h2>
+            <p>Ask me anything about your learning path, concepts, or get step-by-step explanations</p>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="welcome-message" id="welcomeMessage">
+                <div class="welcome-icon">👋</div>
+                <h3 class="welcome-title">Hi! I'm your AI Teacher</h3>
+                <p class="welcome-text">I can help you understand concepts, explain topics step-by-step, and answer your questions about your learning path.</p>
+                
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="sendExamplePrompt('explain')">
+                        <div class="example-prompt-title">📚 Explain a Concept</div>
+                        <div class="example-prompt-text">Get clear explanations of any topic</div>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('examples')">
+                        <div class="example-prompt-title">💡 Show Examples</div>
+                        <div class="example-prompt-text">See practical examples and code</div>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('steps')">
+                        <div class="example-prompt-title">📝 Break It Down</div>
+                        <div class="example-prompt-text">Step-by-step learning guidance</div>
+                    </div>
+                    <div class="example-prompt" onclick="sendExamplePrompt('resources')">
+                        <div class="example-prompt-title">🎯 Best Resources</div>
+                        <div class="example-prompt-text">Find the best learning materials</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="message-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    🤖
+                </div>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <div class="input-box">
+                    <div class="quick-prompts">
+                        <button class="quick-prompt" onclick="insertPrompt('Explain')">💡 Explain</button>
+                        <button class="quick-prompt" onclick="insertPrompt('Give me examples of')">📋 Examples</button>
+                        <button class="quick-prompt" onclick="insertPrompt('What are the steps to learn')">📝 Steps</button>
+                    </div>
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Ask me anything about your learning path..."
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:8000';
+        const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
+        const token = localStorage.getItem('token');
+        
+        let context = null;
+        let conversationHistory = [];
+
+        // Load context from localStorage
+        try {
+            const contextData = localStorage.getItem('aiContext');
+            if (contextData) {
+                context = JSON.parse(contextData);
+                document.getElementById('contextBadge').textContent = context.career_goal;
+            } else {
+                document.getElementById('contextBadge').textContent = 'General Learning';
+            }
+        } catch (e) {
+            document.getElementById('contextBadge').textContent = 'General Learning';
+        }
+
+        // Auto-resize textarea
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Enter to send (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Example prompts
+        function sendExamplePrompt(type) {
+            const prompts = {
+                'explain': context ? `Explain the key concepts I need to learn for ${context.career_goal} at ${context.learning_level} level` : 'Explain how to start learning programming',
+                'examples': context ? `Give me practical examples for learning ${context.career_goal}` : 'Give me examples of beginner programming projects',
+                'steps': context ? `What are the step-by-step learning path for ${context.career_goal}?` : 'What are the steps to learn web development?',
+                'resources': context ? `What are the best resources to learn ${context.career_goal}?` : 'What are the best resources for beginners?'
+            };
+            
+            messageInput.value = prompts[type];
+            sendMessage();
+        }
+
+        // Insert quick prompt
+        function insertPrompt(text) {
+            messageInput.value = text + ' ';
+            messageInput.focus();
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = messageInput.value.trim();
+            if (!input) return;
+
+            // Hide welcome message
+            document.getElementById('welcomeMessage').style.display = 'none';
+
+            // Add user message
+            addMessage('user', input);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Disable send button
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+
+            // Show typing indicator
+            document.getElementById('typingIndicator').classList.add('active');
+
+            try {
+                // Build context-aware prompt
+                const systemPrompt = context 
+                    ? `You are an expert ${context.career_goal} instructor teaching at ${context.learning_level} level. 
+                       The student is currently learning: ${context.current_skills ? context.current_skills.join(', ') : 'getting started'}.
+                       Provide clear, practical, and encouraging explanations. Use examples relevant to ${context.career_goal}.
+                       Keep responses conversational and under 200 words unless asked for detailed explanations.`
+                    : `You are a helpful programming and tech education tutor. Provide clear, practical explanations.
+                       Keep responses conversational and under 200 words unless asked for detailed explanations.`;
+
+                // Add to conversation history
+                conversationHistory.push({ role: 'user', content: input });
+
+                // Call Groq API
+                const response = await fetch(GROQ_API, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getGroqKey()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3-8b-8192',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.choices && data.choices[0]) {
+                    const aiMessage = data.choices[0].message.content;
+                    conversationHistory.push({ role: 'assistant', content: aiMessage });
+                    addMessage('ai', aiMessage);
+                } else {
+                    addMessage('ai', "I'm having trouble connecting right now. Please make sure your Groq API key is set correctly in the backend configuration.");
+                }
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage('ai', "I apologize, but I'm having trouble processing your request. This could be due to API configuration. Please check the backend setup.");
+            } finally {
+                // Hide typing indicator
+                document.getElementById('typingIndicator').classList.remove('active');
+                
+                // Re-enable send button
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Get Groq API key (you need to implement this based on your backend)
+        async function getGroqKey() {
+        const response = await apiCall('/api/groq-key');
+            return response.key;
+        }
+        // Add message to chat
+        function addMessage(sender, content) {
+            const container = document.getElementById('messagesContainer');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'ai' ? '🤖' : '👤';
+            
+            const contentDiv = document.createElement('div');
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            contentDiv.appendChild(messageContent);
+            contentDiv.appendChild(time);
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            
+            container.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'roadmap.html';
+        }
+    </script>
+</body>
+</html>

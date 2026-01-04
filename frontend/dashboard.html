@@ -1,66 +1,523 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1F2937;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4F46E5;
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6B7280;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #D1D5DB;
+            color: #6B7280;
+        }
+
+        .btn-outline:hover {
+            background: #F9FAFB;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1F2937;
+        }
+
+        .hero-subtitle {
+            color: #6B7280;
+            font-size: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .roadmap-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roadmap-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .roadmap-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .roadmap-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .roadmap-badge {
+            padding: 0.25rem 0.75rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .progress-section {
+            margin: 1.5rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+            transition: width 0.3s;
+        }
+
+        .roadmap-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mini-stat {
+            text-align: center;
+        }
+
+        .mini-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .mini-stat-label {
+            font-size: 0.75rem;
+            color: #6B7280;
+            margin-top: 0.25rem;
+        }
+
+        .roadmap-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-state-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-text {
+            color: #6B7280;
+            margin-bottom: 2rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top-bar">
-      <div>
-        <h3 id="userName"></h3>
-        <p id="userCareer"></p>
-      </div>
-      <button id="logoutBtn" class="btn-secondary">Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">LearnPath</div>
+        <div class="navbar-actions">
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+            </div>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1 class="hero-title" id="welcomeTitle">Welcome back! 👋</h1>
+            <p class="hero-subtitle">Continue your learning journey</p>
+
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading your roadmaps...</p>
+        </div>
+
+        <!-- Roadmaps Section -->
+        <div id="roadmapsSection" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">My Roadmaps</h2>
+                <button class="btn btn-primary" onclick="createNewRoadmap()">
+                    + New Roadmap
+                </button>
+            </div>
+            <div class="roadmap-grid" id="roadmapGrid">
+                <!-- Roadmap cards will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📚</div>
+            <h3 class="empty-state-title">No roadmaps yet</h3>
+            <p class="empty-state-text">Create your first learning roadmap to get started</p>
+            <button class="btn btn-primary" onclick="createNewRoadmap()">
+                Create Your First Roadmap
+            </button>
+        </div>
     </div>
 
-    <div class="card progress-hero">
-      <h1 id="progressPercentage">0%</h1>
-      <p>Your learning progress</p>
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-top: 24px; font-size: 14px;">
-        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
-          <div style="font-size: 20px; font-weight: bold;" id="completedCount">0</div>
-          <div style="color: rgba(31,41,55,0.6);">Completed</div>
-        </div>
-        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
-          <div style="font-size: 20px; font-weight: bold;" id="inProgressCount">0</div>
-          <div style="color: rgba(31,41,55,0.6);">In Progress</div>
-        </div>
-        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
-          <div style="font-size: 20px; font-weight: bold;" id="remainingCount">0</div>
-          <div style="color: rgba(31,41,55,0.6);">Remaining</div>
-        </div>
-        <div style="text-align: center; padding: 12px; background: rgba(31,41,55,0.05); border-radius: 8px;">
-          <div style="font-size: 20px; font-weight: bold;" id="totalCount">0</div>
-          <div style="color: rgba(31,41,55,0.6);">Total</div>
-        </div>
-      </div>
-    </div>
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        const token = localStorage.getItem('token');
 
-    <div style="margin-top:32px">
-      <h2>Learning roadmap</h2>
-      <div id="skillsContainer"></div>
-    </div>
+        // Check authentication
+        if (!token) {
+            window.location.href = 'index.html';
+        }
 
-    <div id="loadingState">Loading…</div>
-    <div id="emptyState" style="display:none">
-      <div style="text-align: center; padding: 40px;">
-        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-        <h3>No Roadmap Yet</h3>
-        <p style="margin-top: 8px; color: rgba(31,41,55,0.6);">Let's create your first personalized learning roadmap</p>
-        <button id="createFirstRoadmap" class="btn-primary" style="margin-top: 20px;">✨ Create Roadmap</button>
-      </div>
-    </div>
+        // API Helper
+        async function apiCall(endpoint, options = {}) {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
 
-    <button id="newRoadmapBtn" class="btn-secondary" style="margin-top: 32px; display: none;">+ New Roadmap</button>
-  </div>
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
 
-  <script src="js/api.js"></script>
-  <script src="js/dashboard.js"></script>
+            return response.json();
+        }
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            try {
+                const data = await apiCall('/dashboard');
+                
+                document.getElementById('userName').textContent = data.user.username;
+                document.getElementById('welcomeTitle').textContent = `Welcome back, ${data.user.username}! 👋`;
+
+                // Populate stats
+                const statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_skills}</div>
+                        <div class="stat-label">Total Skills</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.completed_skills}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.in_progress_skills}</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(data.overall_progress)}%</div>
+                        <div class="stat-label">Overall Progress</div>
+                    </div>
+                `;
+                document.getElementById('statsGrid').innerHTML = statsHtml;
+
+                // Show roadmaps or empty state
+                document.getElementById('loadingState').style.display = 'none';
+
+                if (data.roadmaps.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                } else {
+                    document.getElementById('roadmapsSection').style.display = 'block';
+                    renderRoadmaps(data.roadmaps);
+                }
+
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <p style="color: #EF4444;">Failed to load dashboard. Please try again.</p>
+                `;
+            }
+        }
+
+        // Render Roadmaps
+        function renderRoadmaps(roadmaps) {
+            const grid = document.getElementById('roadmapGrid');
+            
+            grid.innerHTML = roadmaps.map(roadmap => {
+                const completed = roadmap.skills.filter(s => s.status === 'COMPLETED').length;
+                const inProgress = roadmap.skills.filter(s => s.status === 'IN_PROGRESS').length;
+                const total = roadmap.skills.length;
+                const progress = roadmap.progress_percentage;
+
+                return `
+                    <div class="roadmap-card" onclick="openRoadmap(${roadmap.id})">
+                        <div class="roadmap-header">
+                            <div>
+                                <h3 class="roadmap-title">${roadmap.career_goal}</h3>
+                            </div>
+                            <span class="roadmap-badge">${roadmap.learning_level}</span>
+                        </div>
+
+                        <div class="roadmap-stats">
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">${completed}</div>
+                                <div class="mini-stat-label">Completed</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">${inProgress}</div>
+                                <div class="mini-stat-label">In Progress</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">${total - completed - inProgress}</div>
+                                <div class="mini-stat-label">Remaining</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="roadmap-actions">
+                            <button class="btn btn-primary btn-block" onclick="openRoadmap(${roadmap.id}); event.stopPropagation();">
+                                Continue Learning →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Navigation Functions
+        function openRoadmap(roadmapId) {
+            localStorage.setItem('currentRoadmapId', roadmapId);
+            window.location.href = 'roadmap.html';
+        }
+
+        function createNewRoadmap() {
+            window.location.href = 'setup.html';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('currentRoadmapId');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
 </body>
 </html>

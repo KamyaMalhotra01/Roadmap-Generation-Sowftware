@@ -1,103 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Learning Roadmap Tracker</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnPath - Your Personalized Learning Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-section {
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .auth-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: #6B7280;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.25rem;
+            background: #F3F4F6;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #4F46E5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            position: relative;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            display: none;
+            padding: 1rem;
+            background: #FEE2E2;
+            color: #991B1B;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            display: none;
+            padding: 1rem;
+            background: #D1FAE5;
+            color: #065F46;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-section {
+                text-align: center;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .auth-card {
+                padding: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card section-pastel cream">
-      <div class="logo">
-        <h1>🎯 Learning Roadmap Tracker</h1>
-        <p>Your personalized path to mastery</p>
-      </div>
-
-      <!-- Login Form -->
-      <form id="loginForm" style="display: block;">
-        <h2>Sign In</h2>
-        
-        <div class="form-group">
-          <label for="loginUsername">Username</label>
-          <input 
-            type="text" 
-            id="loginUsername" 
-            placeholder="Enter your username"
-            required
-          >
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">Master Your Learning Journey</h1>
+            <p class="hero-subtitle">Personalized roadmaps, AI-powered guidance, and structured learning paths to help you achieve your career goals.</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-text">
+                        <div class="feature-title">Personalized Roadmaps</div>
+                        <div class="feature-desc">Custom learning paths tailored to your goals</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-text">
+                        <div class="feature-title">AI Teacher Support</div>
+                        <div class="feature-desc">Get instant help and explanations anytime</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">
+                        <div class="feature-title">Track Your Progress</div>
+                        <div class="feature-desc">Visual progress tracking and achievements</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-          <label for="loginPassword">Password</label>
-          <input 
-            type="password" 
-            id="loginPassword" 
-            placeholder="Enter your password"
-            required
-          >
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">📚</div>
+                <h2 class="auth-title">Welcome to LearnPath</h2>
+                <p class="auth-subtitle">Start your learning journey today</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('login')">Login</button>
+                <button class="tab" onclick="switchTab('register')">Sign Up</button>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <div class="form-container">
+                <!-- Login Form -->
+                <form id="loginForm" class="form active" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="loginUsername">Username</label>
+                        <input 
+                            type="text" 
+                            id="loginUsername" 
+                            class="form-input" 
+                            placeholder="Enter your username"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        Login
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="registerUsername">Username</label>
+                        <input 
+                            type="text" 
+                            id="registerUsername" 
+                            class="form-input" 
+                            placeholder="Choose a username"
+                            required
+                            minlength="3"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerEmail">Email (Optional)</label>
+                        <input 
+                            type="email" 
+                            id="registerEmail" 
+                            class="form-input" 
+                            placeholder="your.email@example.com"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerPassword">Password</label>
+                        <input 
+                            type="password" 
+                            id="registerPassword" 
+                            class="form-input" 
+                            placeholder="Create a strong password"
+                            required
+                            minlength="6"
+                        >
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        Create Account
+                    </button>
+                </form>
+            </div>
         </div>
-
-        <div id="errorMessage" class="error-message"></div>
-
-        <button type="submit" class="btn-primary">
-          <span>Sign In</span><span class="btn-arrow">→</span>
-        </button>
-
-        <p style="text-align: center; margin-top: 20px;">
-          Don't have an account? 
-          <a href="#" id="showRegister" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign up</a>
-        </p>
-      </form>
-
-      <!-- Register Form -->
-      <form id="registerForm" style="display: none;">
-        <h2>Create Account</h2>
-        
-        <div class="form-group">
-          <label for="registerUsername">Username</label>
-          <input 
-            type="text" 
-            id="registerUsername" 
-            placeholder="Choose a username"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="registerEmail">Email (Optional)</label>
-          <input 
-            type="email" 
-            id="registerEmail" 
-            placeholder="your@email.com"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="registerPassword">Password</label>
-          <input 
-            type="password" 
-            id="registerPassword" 
-            placeholder="Create a password (min 6 characters)"
-            required
-          >
-        </div>
-
-        <div id="errorMessage" class="error-message"></div>
-
-        <button type="submit" class="btn-primary">
-          <span>Create Account</span><span class="btn-arrow">→</span>
-        </button>
-
-        <p style="text-align: center; margin-top: 20px;">
-          Already have an account? 
-          <a href="#" id="showLogin" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign in</a>
-        </p>
-      </form>
     </div>
-  </div>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+
+            hideMessages();
+        }
+
+        // Show error
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        // Show success
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        // Hide messages
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideMessages();
+
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showError(data.detail || 'Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Connection error. Please make sure the backend server is running.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        // Handle Register
+        async function handleRegister(e) {
+            e.preventDefault();
+            hideMessages();
+
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const btn = document.getElementById('registerBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email: email || null,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Account created successfully! Please login.');
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('loginUsername').value = username;
+                    }, 1500);
+                } else {
+                    showError(data.detail || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                showError('Connection error. Please make sure the backend server is running.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        }
+
+        // Check if already logged in
+        if (localStorage.getItem('token')) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
 </body>
 </html>

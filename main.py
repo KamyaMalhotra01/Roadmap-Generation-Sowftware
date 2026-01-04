@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from level_generator import generate_level_roadmap
 from datetime import timedelta
 import json
+from config import GROQ_API_KEY
 
 from database import Database
 from models import *
@@ -392,6 +394,395 @@ def get_dashboard(current_user: dict = Depends(get_current_user)):
         "overall_progress": round(overall_progress, 2)
     }
 
+@app.post("/roadmaps/create-levels", status_code=status.HTTP_201_CREATED)
+def create_level_roadmap(
+    roadmap_data: RoadmapCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    🎮 Create NEW level-based roadmap (Game-style)
+    This is the NEW endpoint that generates levels instead of skills
+    """
+    
+    # Validate career goal
+    if roadmap_data.career_goal not in get_available_career_goals():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid career goal. Choose from: {get_available_career_goals()}"
+        )
+    
+    # Get skill template (reuse existing config)
+    skills_template = get_roadmap_template(
+        roadmap_data.career_goal, 
+        roadmap_data.learning_level
+    )
+    
+    if not skills_template:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid learning level"
+        )
+    
+    print(f"🎮 Generating level-based roadmap for {roadmap_data.career_goal}...")
+    
+    # Convert skills to levels using our generator
+    level_roadmap = generate_level_roadmap(
+        skills_template,
+        roadmap_data.career_goal,
+        roadmap_data.learning_level
+    )
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    # Create roadmap entry with metadata
+    cursor.execute(
+        """INSERT INTO roadmaps (user_id, career_goal, learning_level, existing_skills, metadata) 
+           VALUES (?, ?, ?, ?, ?)""",
+        (
+            current_user["id"],
+            roadmap_data.career_goal,
+            roadmap_data.learning_level,
+            json.dumps(roadmap_data.existing_skills or []),
+            json.dumps(level_roadmap)  # Store entire level structure as JSON
+        )
+    )
+    
+    roadmap_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    
+    print(f"✅ Level roadmap created! ID: {roadmap_id}, Total levels: {len(level_roadmap['levels'])}")
+    
+    return {
+        "roadmap_id": roadmap_id,
+        "message": "🎮 Level roadmap created successfully!",
+        "total_levels": level_roadmap["roadmap"]["total_levels"],
+        "estimated_days": level_roadmap["roadmap"]["estimated_days"]
+    }
+
+
+@app.get("/roadmaps/{roadmap_id}/levels")
+def get_roadmap_levels(
+    roadmap_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    📊 Get level-based roadmap with current progress
+    This endpoint returns the game-like level structure
+    """
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    # Get roadmap
+    cursor.execute(
+        "SELECT * FROM roadmaps WHERE id = ? AND user_id = ?",
+        (roadmap_id, current_user["id"])
+    )
+    roadmap = cursor.fetchone()
+    
+    if not roadmap:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Roadmap not found"
+        )
+    
+    # Check if this is a level-based roadmap
+    if not roadmap["metadata"]:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This is not a level-based roadmap. Use /roadmaps/my-roadmaps instead."
+        )
+    
+    # Parse level data from metadata
+    level_data = json.loads(roadmap["metadata"])
+    
+    # Get user progress from level_progress table
+    cursor.execute(
+        """SELECT level_number, completed_at, xp_earned, time_spent_minutes 
+           FROM level_progress 
+           WHERE roadmap_id = ?
+           ORDER BY level_number""",
+        (roadmap_id,)
+    )
+    progress_records = cursor.fetchall()
+    conn.close()
+    
+    # Build progress dictionary
+    completed_levels = {}
+    total_xp = 0
+    total_time = 0
+    
+    for record in progress_records:
+        level_num = record["level_number"]
+        completed_levels[level_num] = {
+            "completed_at": record["completed_at"],
+            "xp_earned": record["xp_earned"],
+            "time_spent": record["time_spent_minutes"]
+        }
+        total_xp += record["xp_earned"]
+        total_time += record["time_spent_minutes"]
+    
+    # Update level statuses based on progress
+    current_level_number = len(completed_levels) + 1
+    
+    for level in level_data["levels"]:
+        level_num = level["level_number"]
+        
+        if level_num in completed_levels:
+            level["status"] = "completed"
+            level["completed_at"] = completed_levels[level_num]["completed_at"]
+        elif level_num == current_level_number:
+            level["status"] = "unlocked"
+        else:
+            level["status"] = "locked"
+    
+    # Update stats
+    level_data["stats"]["levels_completed"] = len(completed_levels)
+    level_data["stats"]["total_xp"] = total_xp
+    level_data["stats"]["time_spent_minutes"] = total_time
+    
+    # Update roadmap progress
+    progress_percentage = (len(completed_levels) / len(level_data["levels"])) * 100
+    level_data["roadmap"]["progress_percentage"] = round(progress_percentage, 2)
+    level_data["roadmap"]["current_level"] = current_level_number
+    
+    # Calculate streak (simplified - just check if activity in last 24 hours)
+    from datetime import datetime, timedelta
+    if progress_records:
+        last_completion = datetime.fromisoformat(progress_records[-1]["completed_at"])
+        now = datetime.now()
+        if (now - last_completion).days < 2:
+            level_data["stats"]["current_streak"] = 1  # Simplified streak
+    
+    return level_data
+
+
+@app.post("/roadmaps/{roadmap_id}/levels/{level_number}/complete")
+def complete_level(
+    roadmap_id: int,
+    level_number: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    ✅ Mark a level as completed
+    This unlocks the next level and awards XP
+    """
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    # Verify ownership
+    cursor.execute(
+        "SELECT * FROM roadmaps WHERE id = ? AND user_id = ?",
+        (roadmap_id, current_user["id"])
+    )
+    roadmap = cursor.fetchone()
+    
+    if not roadmap:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized"
+        )
+    
+    # Get level data
+    level_data = json.loads(roadmap["metadata"])
+    current_level = next(
+        (l for l in level_data["levels"] if l["level_number"] == level_number), 
+        None
+    )
+    
+    if not current_level:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Level not found"
+        )
+    
+    # Check if level is already completed
+    cursor.execute(
+        "SELECT * FROM level_progress WHERE roadmap_id = ? AND level_number = ?",
+        (roadmap_id, level_number)
+    )
+    
+    if cursor.fetchone():
+        conn.close()
+        return {
+            "message": "Level already completed",
+            "xp_earned": 0
+        }
+    
+    # Record completion
+    xp_reward = current_level["xp_reward"]
+    
+    cursor.execute(
+        """INSERT INTO level_progress 
+           (roadmap_id, level_number, xp_earned, time_spent_minutes)
+           VALUES (?, ?, ?, ?)""",
+        (roadmap_id, level_number, xp_reward, current_level["estimated_minutes"])
+    )
+    
+    # Update last_activity
+    cursor.execute(
+        "UPDATE roadmaps SET last_activity = CURRENT_TIMESTAMP WHERE id = ?",
+        (roadmap_id,)
+    )
+    
+    conn.commit()
+    conn.close()
+    
+    # Check if it's a boss level (awards badge)
+    badge = None
+    if current_level["level_type"] == "boss":
+        badge = current_level.get("badge_earned", "Master Badge 🏆")
+    
+    return {
+        "message": "🎉 Level completed!",
+        "level_number": level_number,
+        "xp_earned": xp_reward,
+        "next_level": level_number + 1,
+        "badge_earned": badge,
+        "level_type": current_level["level_type"]
+    }
+
+
+@app.get("/dashboard-levels")
+def get_dashboard_levels(current_user: dict = Depends(get_current_user)):
+    """
+    📊 Get dashboard with level-based roadmaps
+    Similar to /dashboard but returns level format
+    """
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    # Get all user roadmaps
+    cursor.execute(
+        "SELECT * FROM roadmaps WHERE user_id = ? ORDER BY created_at DESC",
+        (current_user["id"],)
+    )
+    roadmaps = cursor.fetchall()
+    
+    result = []
+    total_xp = 0
+    total_levels_completed = 0
+    
+    for roadmap in roadmaps:
+        if not roadmap["metadata"]:
+            continue  # Skip old-style roadmaps
+        
+        level_data = json.loads(roadmap["metadata"])
+        
+        # Get progress for this roadmap
+        cursor.execute(
+            "SELECT COUNT(*) as completed, SUM(xp_earned) as xp FROM level_progress WHERE roadmap_id = ?",
+            (roadmap["id"],)
+        )
+        stats = cursor.fetchone()
+        
+        completed = stats["completed"] or 0
+        xp = stats["xp"] or 0
+        
+        total_xp += xp
+        total_levels_completed += completed
+        
+        result.append({
+            "roadmap_id": roadmap["id"],
+            "career_goal": roadmap["career_goal"],
+            "learning_level": roadmap["learning_level"],
+            "total_levels": level_data["roadmap"]["total_levels"],
+            "levels_completed": completed,
+            "current_level": completed + 1,
+            "progress_percentage": (completed / level_data["roadmap"]["total_levels"]) * 100,
+            "total_xp": xp,
+            "created_at": roadmap["created_at"]
+        })
+    
+    conn.close()
+    
+    return {
+        "user": {
+            "id": current_user["id"],
+            "username": current_user["username"],
+            "email": current_user["email"]
+        },
+        "roadmaps": result,
+        "total_xp": total_xp,
+        "total_levels_completed": total_levels_completed
+    }
+
+
+@app.post("/api/ai-chat")
+async def ai_chat_proxy(
+    message: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Proxy AI chat requests through backend (more secure)
+    This keeps the API key completely hidden from frontend
+    """
+    import requests
+    
+    # Get user context
+    roadmaps = _get_user_roadmaps(current_user["id"])
+    
+    # Build context-aware system prompt
+    context = ""
+    if roadmaps:
+        latest_roadmap = roadmaps[0]
+        context = f"User is learning {latest_roadmap['career_goal']} at {latest_roadmap['learning_level']} level."
+    
+    system_prompt = f"""You are a helpful programming and tech education tutor. 
+    {context}
+    Provide clear, practical, and encouraging explanations. 
+    Keep responses conversational and under 200 words unless asked for detailed explanations."""
+    
+    try:
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "llama3-8b-8192",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 500
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "response": data["choices"][0]["message"]["content"],
+                "model": "llama3-8b-8192"
+            }
+        else:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="AI service error"
+            )
+            
+    except requests.exceptions.Timeout:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="AI service timeout"
+        )
+    except Exception as e:
+        print(f"AI chat error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process AI request"
+        )
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
